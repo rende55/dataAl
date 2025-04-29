@@ -87,26 +87,59 @@ const DataViewer: React.FC = () => {
     const activeData = currentProject.data[activeTab];
     if (!activeData) return;
     
-    // Veri türünü belirle
-    const type = Array.isArray(activeData) ? DataType.LIST : DataType.TABLE;
-    setDataType(type);
+    // Yeni JSON formatı kontrolü (type, x_labels, y_labels, data)
+    let processedData = activeData;
+    if (activeData && typeof activeData === 'object' && !Array.isArray(activeData) && 
+        'type' in activeData && 'data' in activeData) {
+      // Veri türünü belirle
+      const type = activeData.type === 'liste' ? DataType.LIST : DataType.TABLE;
+      setDataType(type);
+      
+      // Yeni format, data özelliğini kullan
+      processedData = activeData.data;
+    } else {
+      // Veri türünü belirle
+      const type = Array.isArray(processedData) ? DataType.LIST : DataType.TABLE;
+      setDataType(type);
+    }
     
-    if (type === DataType.LIST) {
+    if (dataType === DataType.LIST) {
       // Liste verisi
-      handleListData(activeData as any[]);
+      handleListData(Array.isArray(processedData) ? processedData : []);
     } else {
       // Tablo verisi
-      handleTableData(activeData as Record<string, any>);
+      handleTableData(typeof processedData === 'object' && !Array.isArray(processedData) ? processedData : {});
     }
   }, [currentProject, activeTab]);
 
   // Liste verilerini işle
   const handleListData = (data: any[]) => {
+    // Veri yapısı kontrolü
+    if (!data || !Array.isArray(data)) {
+      setColumns([
+        { field: 'id', headerName: 'ID', width: 70 },
+        { field: 'message', headerName: 'Mesaj', width: 300 }
+      ]);
+      setRows([{ id: 1, message: 'Geçersiz veri formatı.' }]);
+      return;
+    }
+    
     if (data.length > 0) {
       // Tablo sütunlarını oluştur
       const cols: GridColDef[] = [
         { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'value', headerName: 'Değer', width: 300, editable: false }
+        { 
+          field: 'value', 
+          headerName: 'Değer', 
+          width: 300, 
+          editable: false,
+          valueFormatter: (params: GridValueFormatterParams) => {
+            // Null kontrolü ekleyelim
+            if (params === null || params === undefined) return '';
+            // Value kontrolü ekleyelim
+            return params.value !== undefined && params.value !== null ? params.value : '';
+          }
+        }
       ];
       
       // İşlem sütunu ekle
@@ -133,11 +166,29 @@ const DataViewer: React.FC = () => {
 
   // Tablo verilerini işle
   const handleTableData = (data: Record<string, any>) => {
+    // Veri yapısı kontrolü
+    if (!data || typeof data !== 'object') {
+      setColumns([
+        { field: 'id', headerName: 'ID', width: 70 },
+        { field: 'message', headerName: 'Mesaj', width: 300 }
+      ]);
+      setRows([{ id: 1, message: 'Geçersiz veri formatı.' }]);
+      return;
+    }
+    
+    // Yeni JSON formatı kontrolü (type, x_labels, y_labels, data)
+    if (data.type && data.data) {
+      // Yeni format, data özelliğini kullan
+      data = data.data;
+    }
+    
     const rowKeys = Object.keys(data);
     
     if (rowKeys.length > 0) {
       const firstRow = data[rowKeys[0]];
-      const colKeys = Object.keys(firstRow);
+      
+      // firstRow null veya undefined ise boş bir nesne kullan
+      const colKeys = firstRow && typeof firstRow === 'object' ? Object.keys(firstRow) : [];
       
       // Tablo sütunlarını oluştur
       const cols: GridColDef[] = [
@@ -153,6 +204,9 @@ const DataViewer: React.FC = () => {
           width: 150,
           editable: false,
           valueFormatter: (params: GridValueFormatterParams) => {
+            // Null kontrolü ekleyelim
+            if (params === null || params === undefined) return '';
+            // Value kontrolü ekleyelim
             return params.value !== undefined && params.value !== null ? params.value : '';
           }
         });

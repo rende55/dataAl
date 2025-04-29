@@ -16,7 +16,8 @@ import {
   Paper,
   Divider,
   Alert,
-  Snackbar
+  Snackbar,
+  Tooltip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
@@ -30,14 +31,28 @@ interface ProjectSelectorProps {
 }
 
 const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onProjectSelected }) => {
-  const { projects, createProject, loadProject } = useProject();
+  const { projects, createProject, loadProject, deleteProject } = useProject();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<{id: string, name: string} | null>(null);
   const [snackbar, setSnackbar] = useState<{open: boolean, message: string, severity: 'success' | 'error'}>({
     open: false,
     message: '',
     severity: 'success'
   });
+
+  // Projeleri LocalStorage'dan yükle
+  useEffect(() => {
+    // Bu useEffect, bileşen yüklendiğinde ve projelerde değişiklik olduğunda çalışır
+    // Böylece projeler ekranına geri dönüldüğünde güncel projeler görüntülenir
+    const savedProjects = localStorage.getItem('dataal-projects');
+    if (savedProjects) {
+      // Bu satır doğrudan projeleri güncellemez, sadece kontrol amaçlı
+      // Projeler zaten ProjectContext tarafından yükleniyor
+      console.log('Projeler yüklendi:', JSON.parse(savedProjects).length);
+    }
+  }, []);
 
   // Proje oluşturma dialog'unu aç
   const handleOpenCreateDialog = () => {
@@ -147,14 +162,28 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onProjectSelected }) 
                   secondary={`Oluşturulma: ${formatDate(project.createdAt)} | Son Düzenleme: ${formatDate(project.lastModified)}`}
                 />
                 <ListItemSecondaryAction>
-                  <IconButton
-                    edge="end"
-                    color="primary"
-                    onClick={() => handleLoadProject(project.id, project.name)}
-                    title="Projeyi Aç"
-                  >
-                    <FolderOpenIcon />
-                  </IconButton>
+                  <Tooltip title="Projeyi Aç">
+                    <IconButton
+                      edge="end"
+                      color="primary"
+                      onClick={() => handleLoadProject(project.id, project.name)}
+                      sx={{ mr: 1 }}
+                    >
+                      <FolderOpenIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Projeyi Sil">
+                    <IconButton
+                      edge="end"
+                      color="error"
+                      onClick={() => {
+                        setIsDeleteDialogOpen(true);
+                        setProjectToDelete({ id: project.id, name: project.name });
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </ListItemSecondaryAction>
               </ListItem>
             ))}
@@ -187,6 +216,32 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onProjectSelected }) 
             disabled={!newProjectName.trim()}
           >
             Oluştur
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Proje Silme Dialog */}
+      <Dialog open={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)}>
+        <DialogTitle>Projeyi Sil</DialogTitle>
+        <DialogContent>
+          <Typography>
+            {projectToDelete?.name} adlı projeyi silmek istiyor musunuz?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDeleteDialogOpen(false)}>İptal</Button>
+          <Button 
+            onClick={() => {
+              if (projectToDelete) {
+                deleteProject(projectToDelete.id);
+                setIsDeleteDialogOpen(false);
+                showSnackbar(`"${projectToDelete.name}" projesi silindi.`, 'success');
+              }
+            }} 
+            variant="contained" 
+            color="error"
+          >
+            Sil
           </Button>
         </DialogActions>
       </Dialog>

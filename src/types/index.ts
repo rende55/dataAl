@@ -25,6 +25,9 @@ export interface TabItem {
 export enum DataType {
   LIST = 'list',
   TABLE = 'table',
+  NUMERIC = 'numeric',
+  TEXT = 'text',
+  DATE = 'date',
   UNKNOWN = 'unknown'
 }
 

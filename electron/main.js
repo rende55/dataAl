@@ -2,7 +2,6 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const url = require('url');
-const isDev = process.env.NODE_ENV === 'development';
 
 // Pencere referansını global olarak tut (GC tarafından silinmesini önlemek için)
 let mainWindow;
@@ -31,20 +30,18 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     
-    // Geliştirme modunda DevTools'u aç
-    if (isDev) {
+    // DevTools'u sadece --dev parametresi ile açılırsa aç
+    if (process.argv.includes('--dev')) {
       mainWindow.webContents.openDevTools();
     }
   });
 
-  // Uygulamayı yükle
-  const startUrl = isDev
-    ? 'http://localhost:5173' // Geliştirme sunucusu
-    : url.format({
-        pathname: path.join(__dirname, '../dist/index.html'),
-        protocol: 'file:',
-        slashes: true
-      });
+  // Uygulamayı yükle - Her zaman dist klasöründen yükle
+  const startUrl = url.format({
+    pathname: path.join(__dirname, '../dist/index.html'),
+    protocol: 'file:',
+    slashes: true
+  });
 
   mainWindow.loadURL(startUrl);
   console.log(`Uygulama başlatılıyor: ${startUrl}`);

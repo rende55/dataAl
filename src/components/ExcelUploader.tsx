@@ -3,35 +3,34 @@ import {
   Box, 
   Button, 
   Typography, 
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
+  Dialog,
   DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Alert,
-  Snackbar,
-  Paper,
-  TextField,
-  RadioGroup,
   FormControlLabel,
+  RadioGroup,
   Radio,
+  Tabs,
+  Tab,
+  Paper,
+  Snackbar,
+  Alert,
+  CircularProgress,
+  useTheme,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Tabs,
-  Tab,
   Divider,
-  useTheme,
-  useMediaQuery,
   Stack,
-  Chip,
-  CircularProgress
+  Chip
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -64,7 +63,6 @@ const ExcelUploader: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
   // Dosya seçimi
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,20 +72,37 @@ const ExcelUploader: React.FC = () => {
   };
 
   // Dosya işleme
-  const processFile = async (file: File) => {
-    if (isValidFileExtension(file)) {
+  const processFile = async (file: any) => {
+    try {
+      // Dosya geçerliliğini kontrol et
+      if (!isValidFileExtension(file)) {
+        showSnackbar('Lütfen geçerli bir Excel veya CSV dosyası seçin.', 'error');
+        return;
+      }
+      
       setSelectedFile(file);
+      setLoading(true);
+      setError(null);
+      
+      let preview;
+      
       try {
         // Dosyayı önizleme için yükle
-        const preview = await excelToPreview(file);
+        preview = await excelToPreview(file);
         setPreviewData(preview);
         setSelectedDataType(preview.type);
         setIsDialogOpen(true);
-      } catch (error) {
-        showSnackbar('Dosya işlenirken bir hata oluştu.', 'error');
+      } catch (err: any) {
+        console.error('Excel önizleme hatası:', err);
+        showSnackbar(`Dosya işlenirken bir hata oluştu: ${err.message || 'Bilinmeyen hata'}`, 'error');
+      } finally {
+        setLoading(false);
       }
-    } else {
-      showSnackbar('Lütfen geçerli bir Excel veya CSV dosyası seçin.', 'error');
+    } catch (error: any) {
+      console.error('Dosya işleme hatası:', error);
+      setLoading(false);
+      setError(error.message || 'Dosya işlenirken bir hata oluştu');
+      showSnackbar('Dosya işlenirken bir hata oluştu.', 'error');
     }
   };
 
@@ -329,17 +344,6 @@ const ExcelUploader: React.FC = () => {
           Dosya Seç
         </Button>
       </Box>
-      
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<UploadFileIcon />}
-        onClick={() => document.getElementById('excel-file-input')?.click()}
-        fullWidth
-        sx={{ py: 1.2 }}
-      >
-        Dosya Seç
-      </Button>
 
       {/* Veri Önizleme ve Yükleme Dialog */}
       <Dialog 

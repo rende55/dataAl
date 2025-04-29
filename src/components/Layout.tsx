@@ -1,7 +1,9 @@
 import React from 'react';
-import { Box, CssBaseline, Container, Paper, Typography, AppBar, Toolbar, useMediaQuery } from '@mui/material';
+import { Box, CssBaseline, Container, Paper, Typography, AppBar, Toolbar, useMediaQuery, Button, Chip } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import StorageIcon from '@mui/icons-material/Storage';
+import HomeIcon from '@mui/icons-material/Home';
+import { useProject } from '../context/ProjectContext';
 
 // Tema oluşturma
 const theme = createTheme({
@@ -71,6 +73,15 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+  const { currentProject, resetProject } = useProject();
+
+  // Proje seçme ekranına geri dön
+  const handleBackToProjects = () => {
+    // LocalStorage'dan mevcut proje bilgisini temizle
+    localStorage.removeItem('dataal-current-project');
+    // Context'teki proje bilgisini sıfırla
+    resetProject();
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -81,7 +92,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <StorageIcon sx={{ mr: 2, fontSize: 28 }} />
             <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
               Veri Yönetim Paneli
+              {currentProject && (
+                <Chip 
+                  label={currentProject.info.name} 
+                  size="small" 
+                  color="primary" 
+                  sx={{ ml: 2, verticalAlign: 'middle' }} 
+                />
+              )}
             </Typography>
+            
+            {currentProject && (
+              <Button 
+                variant="outlined" 
+                color="primary" 
+                startIcon={<HomeIcon />} 
+                size="small"
+                onClick={handleBackToProjects}
+              >
+                Projeler
+              </Button>
+            )}
           </Toolbar>
         </AppBar>
         

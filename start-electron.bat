@@ -1,7 +1,4 @@
 @echo off
-echo DataAL Panel Masaustu Uygulamasi Baslatiliyor...
-set NODE_ENV=development
+echo DataAL Panel Gelistirme Modunda Baslatiliyor...
 cd /d "%~dp0"
-start npm run dev
-timeout /t 5
-start electron .
+npm run dev

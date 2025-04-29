@@ -155,17 +155,28 @@ export const useElectron = () => {
           throw new Error(result.message || 'Excel dosyası açılamadı');
         }
 
-        // Base64 buffer'ı binary string'e dönüştür
-        const buffer = Buffer.from(result.buffer || '', 'base64');
-        const data = new Uint8Array(buffer);
-        const workbook = XLSX.read(data, { type: 'array' });
+        try {
+          // Base64 buffer'ı binary array'e dönüştür
+          const binaryString = atob(result.buffer || '');
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          
+          for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          
+          const workbook = XLSX.read(bytes, { type: 'array' });
 
-        return { 
-          success: true, 
-          filePath: result.filePath,
-          fileName: result.fileName,
-          workbook
-        };
+          return { 
+            success: true, 
+            filePath: result.filePath,
+            fileName: result.fileName,
+            workbook
+          };
+        } catch (err: any) {
+          console.error('Excel dosyası işlenirken hata:', err);
+          throw new Error(`Excel dosyası işlenirken hata: ${err.message}`);
+        }
       } else {
         // Tarayıcı API kullan - input element oluştur
         return new Promise((resolve) => {

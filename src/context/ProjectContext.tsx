@@ -16,6 +16,8 @@ interface ProjectContextType {
   getAllTabs: () => string[];
   downloadProjectAsJson: () => void;
   isTabExists: (tabName: string) => boolean;
+  resetProject: () => void;
+  deleteProject: (id: string) => boolean;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -237,6 +239,38 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  // Proje sıfırla
+  const resetProject = () => {
+    setCurrentProject(null);
+    setActiveTab(null);
+    localStorage.removeItem(CURRENT_PROJECT_KEY);
+  };
+
+  // Proje sil
+  const deleteProject = (id: string): boolean => {
+    const projectIndex = projects.findIndex(p => p.id === id);
+    if (projectIndex === -1) return false;
+
+    // Proje listesinden sil
+    setProjects(prev => prev.filter(p => p.id !== id));
+
+    // LocalStorage'dan sil
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects.filter(p => p.id !== id)));
+
+    // Proje verilerini sil
+    const projectKey = `dataal-project-${id}`;
+    localStorage.removeItem(projectKey);
+
+    // Eğer silinen proje aktif projeyse, aktif projeyi null yap
+    if (currentProject && currentProject.info.id === id) {
+      setCurrentProject(null);
+      setActiveTab(null);
+      localStorage.removeItem(CURRENT_PROJECT_KEY);
+    }
+
+    return true;
+  };
+
   return (
     <ProjectContext.Provider value={{
       projects,
@@ -251,7 +285,9 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
       removeTab,
       getAllTabs,
       downloadProjectAsJson,
-      isTabExists
+      isTabExists,
+      resetProject,
+      deleteProject
     }}>
       {children}
     </ProjectContext.Provider>
