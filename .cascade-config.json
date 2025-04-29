@@ -1,0 +1,34 @@
+{
+  "language": "tr",
+  "preferences": {
+    "responseLanguage": "Turkish",
+    "alwaysRespondInTurkish": true
+  },
+  "terminal": {
+    "shell": "powershell",
+    "rules": {
+      "noAmpersandOperator": true,
+      "useSemicolonForMultipleCommands": true,
+      "useCallOperatorForExecutables": true,
+      "preferPowerShellCmdlets": true
+    }
+  },
+  "projectSettings": {
+    "name": "DataAL Panel",
+    "description": "React + Material UI tabanlı veri yönetim paneli",
+    "framework": {
+      "type": "react",
+      "ui": "material-ui"
+    },
+    "deployment": {
+      "desktop": {
+        "framework": "electron",
+        "modes": {
+          "development": "start-electron.bat",
+          "production": "start-desktop.bat"
+        },
+        "preference": "production"
+      }
+    }
+  }
+}

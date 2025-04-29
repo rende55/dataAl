@@ -1,0 +1,73 @@
+{
+  "name": "dataal-panel",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Veri Yönetim Paneli Masaüstü Uygulaması",
+  "author": "DataAL",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"cross-env BROWSER=none npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-builder",
+    "electron:preview": "electron ."
+  },
+  "build": {
+    "appId": "com.dataal.panel",
+    "productName": "DataAL Panel",
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "directories": {
+      "buildResources": "public",
+      "output": "release"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "public/favicon.ico"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "icon": "public/favicon.ico"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "public/favicon.ico"
+    }
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
+    "@mui/x-data-grid": "^8.1.0",
+    "date-fns": "^2.30.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-json-view-lite": "^2.4.1",
+    "uuid": "^9.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@types/uuid": "^9.0.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^36.0.0",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.26.1",
+    "vite": "^6.3.1",
+    "wait-on": "^8.0.3"
+  }
+}
